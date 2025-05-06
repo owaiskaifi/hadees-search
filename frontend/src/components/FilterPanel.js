@@ -36,11 +36,7 @@ const FilterPanel = ({ filters, onFilterChange }) => {
             <option value="">All Sources</option>
             <option value="Bukhari">Bukhari</option>
             <option value="Muslim">Muslim</option>
-            <option value="Abu Dawood">Abu Dawood</option>
-            <option value="Tirmidhi">Tirmidhi</option>
-            <option value="Ibn Majah">Ibn Majah</option>
-            <option value="Nasai">Nasai</option>
-            <option value="Malik">Malik</option>
+            
           </select>
         </div>
         
@@ -58,6 +54,7 @@ const FilterPanel = ({ filters, onFilterChange }) => {
             <option value="20">20 results</option>
             <option value="50">50 results</option>
             <option value="100">100 results</option>
+            <option value="1000">Max results</option>
           </select>
         </div>
         

@@ -3,9 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-backend/chroma_db
 backend/chroma_db/
-frontend/node_modules/
 frontend/node_modules/
 # C extensions
 *.so

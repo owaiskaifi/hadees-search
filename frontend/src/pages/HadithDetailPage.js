@@ -1,27 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams,  useLocation, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
 
 const HadithDetailPage = () => {
   const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [hadith, setHadith] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   useEffect(() => {
+    // If we have a hadith from navigation state, use it
+    if (location.state && location.state.hadith) {
+      setHadith(location.state.hadith);
+      setLoading(false);
+      return;
+    }
+
+    // Otherwise fetch it from the API
     const fetchHadith = async () => {
       try {
         setLoading(true);
-        // Since our backend doesn't have a specific endpoint for fetching a single hadith,
-        // we'll simulate this by searching with a unique ID
         const response = await axios.get(`${API_URL}/search`, {
-          params: { query: id, limit: 1 }
+          params: { query: id, limit: 10 }
         });
         
         if (response.data && response.data.length > 0) {
-          setHadith(response.data[0]);
+          // Find the exact match by hadith_id
+          const exactMatch = response.data.find(h => h.hadith_id === id);
+          if (exactMatch) {
+            setHadith(exactMatch);
+          } else {
+            // If no exact match, use the first result
+            setHadith(response.data[0]);
+          }
         } else {
           setError('Hadith not found');
         }
@@ -33,10 +53,8 @@ const HadithDetailPage = () => {
       }
     };
 
-    if (id) {
-      fetchHadith();
-    }
-  }, [id]);
+    fetchHadith();
+  }, [id, location.state]);
 
   if (loading) {
     return (
@@ -53,12 +71,15 @@ const HadithDetailPage = () => {
           <p className="font-medium">{error || 'Hadith not found'}</p>
           <p className="mt-2">The hadith you're looking for could not be found.</p>
         </div>
-        <Link to="/" className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium">
+        <button 
+          onClick={handleGoBack}
+          className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium"
+        >
           <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
           </svg>
           Back to search
-        </Link>
+        </button>
       </div>
     );
   }
@@ -66,14 +87,20 @@ const HadithDetailPage = () => {
   // Format score as percentage
   const scorePercentage = Math.round(hadith.score * 100);
 
+  // Check if the current hadith has a reference to another hadith
+  // const isReferenceHadith = hasReference(hadith.text);
+  
   return (
     <div className="max-w-4xl mx-auto p-6">
-      <Link to="/" className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium mb-6">
+      <button 
+        onClick={handleGoBack}
+        className="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium mb-6"
+      >
         <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
         Back to search
-      </Link>
+      </button>
       
       <div className="bg-white rounded-lg shadow-lg p-8 mb-6 border border-gray-100">
         <div className="mb-8">
@@ -146,7 +173,9 @@ const HadithDetailPage = () => {
           
           <div className="bg-gray-50 rounded-lg p-6 my-6 border border-gray-200">
             <h2 className="text-xl font-semibold text-gray-800 mb-4">Hadith Text</h2>
-            <div className="text-lg text-gray-800 leading-relaxed whitespace-pre-wrap overflow-auto">
+            
+            {/* Display hadith text exactly as in the HadithCard component */}
+            <div className="text-gray-700 whitespace-pre-wrap leading-relaxed">
               {hadith.text}
             </div>
           </div>

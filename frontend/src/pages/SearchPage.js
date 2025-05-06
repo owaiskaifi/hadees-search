@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import SearchBox from '../components/SearchBox';
 import HadithCard from '../components/HadithCard';
 import AnswerPanel from '../components/AnswerPanel';
@@ -6,13 +6,57 @@ import FilterPanel from '../components/FilterPanel';
 import { searchHadiths, answerQuestion } from '../services/api';
 
 const SearchPage = () => {
-  const [searchResults, setSearchResults] = useState([]);
-  const [answer, setAnswer] = useState(null);
+  // Initialize state from sessionStorage if it exists
+  const [searchResults, setSearchResults] = useState(() => {
+    const savedResults = sessionStorage.getItem('searchResults');
+    return savedResults ? JSON.parse(savedResults) : [];
+  });
+  
+  const [answer, setAnswer] = useState(() => {
+    const savedAnswer = sessionStorage.getItem('answer');
+    return savedAnswer ? savedAnswer : null;
+  });
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [currentQuery, setCurrentQuery] = useState('');
-  const [isQuestion, setIsQuestion] = useState(false);
-  const [filters, setFilters] = useState({ limit: 100 });
+  
+  const [currentQuery, setCurrentQuery] = useState(() => {
+    return sessionStorage.getItem('currentQuery') || '';
+  });
+  
+  const [isQuestion, setIsQuestion] = useState(() => {
+    return sessionStorage.getItem('isQuestion') === 'true';
+  });
+  
+  const [filters, setFilters] = useState(() => {
+    const savedFilters = sessionStorage.getItem('filters');
+    return savedFilters ? JSON.parse(savedFilters) : { limit: 100 };
+  });
+
+  // Save state to sessionStorage whenever it changes
+  useEffect(() => {
+    if (searchResults.length > 0) {
+      sessionStorage.setItem('searchResults', JSON.stringify(searchResults));
+    }
+    
+    if (answer) {
+      sessionStorage.setItem('answer', answer);
+    }
+    
+    if (currentQuery) {
+      sessionStorage.setItem('currentQuery', currentQuery);
+    }
+    
+    sessionStorage.setItem('isQuestion', isQuestion.toString());
+    sessionStorage.setItem('filters', JSON.stringify(filters));
+  }, [searchResults, answer, currentQuery, isQuestion, filters]);
+
+  // Initial load - if we have a query but no results, run the search
+  // useEffect(() => {
+  //   if (currentQuery && searchResults.length === 0 && !loading) {
+  //     handleSearch(currentQuery, isQuestion ? 'question' : 'search');
+  //   }
+  // }, []);
 
   const handleSearch = async (query, mode) => {
     setCurrentQuery(query);
@@ -24,6 +68,7 @@ const SearchPage = () => {
       if (mode === 'search') {
         // Regular search
         setAnswer(null);
+        sessionStorage.removeItem('answer');
         const results = await searchHadiths(query, filters);
         // Sort results by score in descending order
         const sortedResults = [...results].sort((a, b) => b.score - a.score);
@@ -60,7 +105,7 @@ const SearchPage = () => {
         <p className="text-xl text-white mb-10 opacity-90">Search for hadith or ask questions about Islamic teachings</p>
         
         <div className="max-w-4xl mx-auto px-4">
-          <SearchBox onSearch={handleSearch} />
+          <SearchBox onSearch={handleSearch} initialQuery={currentQuery} />
         </div>
       </div>
       

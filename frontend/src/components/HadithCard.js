@@ -93,6 +93,7 @@ const HadithCard = ({ hadith }) => {
           
           <Link 
             to={`/hadith/${hadith.hadith_id}`}
+            state={{ hadith: hadith }}
             className="text-primary-600 hover:text-primary-800 text-sm font-medium flex items-center transition-colors duration-150"
           >
             View Details

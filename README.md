@@ -38,7 +38,7 @@ DATA SOURCE https://www.kaggle.com/datasets/fahd09/hadith-dataset
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/hadees-search.git
+git clone https://github.com/owaiskaifi/hadees-search.git
 cd hadees-search
 ```
 

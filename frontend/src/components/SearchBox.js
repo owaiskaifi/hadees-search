@@ -1,14 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const SearchBox = ({ onSearch, placeholder = "Search hadith or ask a question..." }) => {
-  const [query, setQuery] = useState('');
-  const [searchMode, setSearchMode] = useState('search'); // 'search' or 'question'
+const SearchBox = ({ onSearch, initialQuery = "", placeholder = "Search hadith or ask a question..." }) => {
+  const [query, setQuery] = useState(initialQuery);
+  const [searchMode, setSearchMode] = useState(() => {
+    // Get the search mode from sessionStorage or default to 'search'
+    return sessionStorage.getItem('isQuestion') === 'true' ? 'question' : 'search';
+  });
+
+  // Update query if initialQuery changes
+  useEffect(() => {
+    if (initialQuery) {
+      setQuery(initialQuery);
+    }
+  }, [initialQuery]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (query.trim()) {
       onSearch(query, searchMode);
     }
+  };
+  
+  const handleModeChange = (mode) => {
+    setSearchMode(mode);
+    sessionStorage.setItem('isQuestion', mode === 'question' ? 'true' : 'false');
   };
 
   return (
@@ -22,7 +37,7 @@ const SearchBox = ({ onSearch, placeholder = "Search hadith or ask a question...
                 ? 'bg-primary-600 text-white shadow-inner'
                 : 'bg-white text-gray-700 hover:bg-gray-100'
             }`}
-            onClick={() => setSearchMode('search')}
+            onClick={() => handleModeChange('search')}
           >
             <div className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -38,7 +53,7 @@ const SearchBox = ({ onSearch, placeholder = "Search hadith or ask a question...
                 ? 'bg-primary-600 text-white shadow-inner'
                 : 'bg-white text-gray-700 hover:bg-gray-100'
             }`}
-            onClick={() => setSearchMode('question')}
+            onClick={() => handleModeChange('question')}
           >
             <div className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
